@@ -1,0 +1,431 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+        /* Fullscreen mode */
+        body, html {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #gameContainer {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      background-color: #f0f0f0;
+    }
+
+    #controls {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+
+    #controls input {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      display: none; /* Hide initially */
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      background: #ddd;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+
+    .cell:hover {
+      background: #ccc;
+    }
+
+    .winner {
+      text-decoration: line-through;
+      color: green;
+      animation: strike 0.5s ease-in-out;
+    }
+
+    @keyframes strike {
+      0% {
+        transform: scaleX(1);
+      }
+      50% {
+        transform: scaleX(0);
+      }
+      100% {
+        transform: scaleX(1);
+      }
+    }
+
+    #gameResult {
+      font-size: 1.5em;
+      margin-top: 20px;
+    }
+
+    #gameResult button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    #scores {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1.2em;
+    }
+
+    #time {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.2em;
+    }
+
+    .bg{
+            animation: bg_animate 10s ease-in-out alternate infinite;
+            -webkit-animation: bg_animate 10s ease-in-out alternate infinite;
+            z-index: 9999999;
+            -moz-animation: bg_animate 10s ease-in-out alternate infinite;
+            -o-animation: bg_animate 10s ease-in-out alternate infinite;
+        }
+        @keyframes bg_animate{
+            0%{
+                background: #fff;
+            }
+            20%{
+                background: #b0ffc3;
+            }
+            40%{
+                background: #fffcb0;
+            }
+            60%{
+                background: #ffa3a3;
+            }
+            80%{
+                background: #a3ddff;
+            }
+            100%{
+                background: #4b4b4b;
+            }
+        }
+        @-webkit-keyframes bg_animate{
+            0%{
+                background: #fff;
+            }
+            20%{
+                background: #b0ffc3;
+            }
+            40%{
+                background: #fffcb0;
+            }
+            60%{
+                background: #ffa3a3;
+            }
+            80%{
+                background: #a3ddff;
+            }
+            100%{
+                background: #4b4b4b;
+            }
+        }
+        @-moz-keyframes bg_animate{
+            0%{
+                background: #fff;
+            }
+            20%{
+                background: #b0ffc3;
+            }
+            40%{
+                background: #fffcb0;
+            }
+            60%{
+                background: #ffa3a3;
+            }
+            80%{
+                background: #a3ddff;
+            }
+            100%{
+                background: #4b4b4b;
+            }
+        }
+        @-o-keyframes bg_animate{
+            0%{
+                background: #fff;
+            }
+            20%{
+                background: #b0ffc3;
+            }
+            40%{
+                background: #fffcb0;
+            }
+            60%{
+                background: #ffa3a3;
+            }
+            80%{
+                background: #a3ddff;
+            }
+            100%{
+                background: #4b4b4b;
+            }
+        }
+
+/* CSS */
+.button-85 {
+  padding: 0.6em 2em;
+  border: none;
+  outline: none;
+  color: rgb(255, 255, 255);
+  background: #111;
+  cursor: pointer;
+  position: relative;
+  z-index: 0;
+  border-radius: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-85:before {
+  content: "";
+  background: linear-gradient(
+    45deg,
+    #ff0000,
+    #ff7300,
+    #fffb00,
+    #48ff00,
+    #00ffd5,
+    #002bff,
+    #7a00ff,
+    #ff00c8,
+    #ff0000
+  );
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  background-size: 400%;
+  z-index: -1;
+  filter: blur(5px);
+  -webkit-filter: blur(5px);
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  animation: glowing-button-85 20s linear infinite;
+  transition: opacity 0.3s ease-in-out;
+  border-radius: 10px;
+}
+
+@keyframes glowing-button-85 {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 400% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.button-85:after {
+  z-index: -1;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #222;
+  left: 0;
+  top: 0;
+  border-radius: 10px;
+}
+
+  </style>
+</head>
+<body>
+
+    
+  <div id="gameContainer" class="bg">
+    
+    <div id="controls">
+        <button onclick="createRoom()" class="button-85">Create Room</button>
+       
+      <input type="text" id="roomCodeInput" placeholder="Enter room code">
+      <button onclick="joinRoom()" class="button-85">Join Room</button>
+    </div>
+    <div id="gameBoard"></div>
+    <div id="gameResult">
+      <span id="resultMessage"></span>
+    </div>
+  </div>
+  <div id="scores">
+    <span>Player X: <span id="scoreX">0</span></span><br>
+    <span>Player O: <span id="scoreO">0</span></span>
+  </div>
+  <div id="time">
+    <span id="startTime"></span>
+    <span id="currentTime"></span>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let roomCode = '';
+    let scores = { X: 0, O: 0 };
+    let gameResult = false;
+
+    function createRoom() {
+      roomCode = Math.random().toString(36).substring(2, 7);
+      alert(`Room code: ${roomCode}`);
+      socket.emit('createRoom', roomCode);
+      showGameBoard();
+    }
+
+    function joinRoom() {
+      roomCode = document.getElementById('roomCodeInput').value;
+      if (roomCode) {
+        socket.emit('joinRoom', roomCode);
+        showGameBoard();
+      } else {
+        alert('Please enter a room code');
+      }
+    }
+
+    function showGameBoard() {
+      document.getElementById('controls').style.display = 'none';
+      document.getElementById('gameBoard').style.display = 'grid';
+      document.getElementById('gameResult').style.display = 'none';
+      createBoard();
+    }
+
+    function createBoard() {
+      const gameBoard = document.getElementById('gameBoard');
+      gameBoard.innerHTML = '';
+      board.forEach((cell, index) => {
+        const cellElement = document.createElement('div');
+        cellElement.className = 'cell';
+        cellElement.dataset.index = index;
+        cellElement.innerText = cell;
+        cellElement.addEventListener('click', handleMove);
+        gameBoard.appendChild(cellElement);
+      });
+    }
+
+    function handleMove(event) {
+      if (!gameResult) {
+        const index = event.target.dataset.index;
+        if (board[index] === '') {
+          board[index] = currentPlayer;
+          socket.emit('move', { index, player: currentPlayer, roomCode });
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          createBoard();
+          checkWin();
+        }
+      }
+    }
+
+    function updateBoard(data) {
+      board[data.index] = data.player;
+      currentPlayer = data.player === 'X' ? 'O' : 'X';
+      createBoard();
+      checkWin();
+    }
+
+    function checkWin() {
+      const winPatterns = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+      ];
+
+      for (const pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          highlightWinningCells(a, b, c);
+          setTimeout(() => {
+            alert(`${board[a]} wins!`);
+            updateScores(board[a]);
+            resetBoard();
+          }, 500);
+          return;
+        }
+      }
+
+      if (board.every(cell => cell)) {
+        setTimeout(() => {
+          alert('Draw!');
+          resetBoard();
+        }, 500);
+      }
+    }
+
+    function highlightWinningCells(a, b, c) {
+      const cells = document.querySelectorAll('.cell');
+      cells[a].classList.add('winner');
+      cells[b].classList.add('winner');
+      cells[c].classList.add('winner');
+    }
+
+    function resetBoard() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      gameResult = false;
+      createBoard();
+      document.getElementById('gameResult').style.display = 'none';
+    }
+
+    function updateScores(winner) {
+      scores[winner]++;
+      document.getElementById('scoreX').innerText = scores.X;
+      document.getElementById('scoreO').innerText = scores.O;
+    }
+
+    function startTimer() {
+      startTime = new Date();
+      document.getElementById('startTime').innerText = `Start Time: ${startTime.toLocaleTimeString()}`;
+      timerInterval = setInterval(() => {
+        const currentTime = new Date();
+        const elapsedTime = currentTime.getTime() - startTime.getTime();
+        const minutes = Math.floor(elapsedTime / (1000 * 60));
+        const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+        document.getElementById('currentTime').innerText = `Elapsed Time: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+      }, 1000);
+    }
+
+    socket.on('move', updateBoard);
+
+    socket.on('roomJoined', () => {
+      showGameBoard();
+    });
+  </script>
+</body>
+</html>
+
