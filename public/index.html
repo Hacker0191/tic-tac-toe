@@ -1,0 +1,381 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    
+        /* Fullscreen mode */
+        body, html {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #gameContainer {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      background-color: #f0f0f0;
+    }
+
+    #controls {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+
+    #controls input {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      display: none; /* Hide initially */
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      background: #ddd;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+
+    .cell:hover {
+      background: #ccc;
+    }
+
+    .winner {
+      text-decoration: line-through;
+      color: green;
+      animation: strike 0.5s ease-in-out;
+    }
+
+    @keyframes strike {
+      0% {
+        transform: scaleX(1);
+      }
+      50% {
+        transform: scaleX(0);
+      }
+      100% {
+        transform: scaleX(1);
+      }
+    }
+
+    #gameResult {
+      font-size: 1.5em;
+      margin-top: 20px;
+    }
+
+    #gameResult button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    #scores {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1.2em;
+    }
+
+    #time {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.2em;
+    }
+
+  
+
+/* CSS */
+.button-85 {
+  padding: 0.6em 2em;
+  border: none;
+  outline: none;
+  color: rgb(255, 255, 255);
+  background: #111;
+  cursor: pointer;
+  position: relative;
+  z-index: 0;
+  border-radius: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-85:before {
+  content: "";
+  background: linear-gradient(
+    45deg,
+    #ff0000,
+    #ff7300,
+    #fffb00,
+    #48ff00,
+    #00ffd5,
+    #002bff,
+    #7a00ff,
+    #ff00c8,
+    #ff0000
+  );
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  background-size: 400%;
+  z-index: -1;
+  filter: blur(5px);
+  -webkit-filter: blur(5px);
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  animation: glowing-button-85 20s linear infinite;
+  transition: opacity 0.3s ease-in-out;
+  border-radius: 10px;
+}
+
+@keyframes glowing-button-85 {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 400% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.button-85:after {
+  z-index: -1;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #222;
+  left: 0;
+  top: 0;
+  border-radius: 10px;
+}
+  </style>
+
+<script type="text/javascript">
+  var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+  (function(){
+    var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+    s1.async = true;
+    s1.src = 'https://embed.tawk.to/6672d9bddd590416e257bdc4/1i0oa53ar';
+    s1.charset = 'UTF-8';
+    s1.setAttribute('crossorigin', '*');
+    s0.parentNode.insertBefore(s1, s0);
+  })();
+</script>
+</head>
+<body>
+
+    
+  <div id="gameContainer">
+    <div id="controls">
+      <button onclick="createRoom()" class="button-85">Create Room</button>
+      <input type="text" id="roomCodeInput" placeholder="Enter room code">
+      <button onclick="joinRoom()" class="button-85">Join Room</button>
+    </div>
+    <div id="gameBoard"></div>
+    <br>
+    <div id="waitingMessage"></div>
+  </div>
+  <div id="scores">
+    <span>Player X: <span id="scoreX">0</span></span><br>
+    <span>Player O: <span id="scoreO">0</span></span>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <script>
+    const socket = io();
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let roomCode = '';
+    let scores = { X: 0, O: 0 };
+    let playerSymbol = '';
+    let isMyTurn = false;
+    let gameResult = false;
+  
+    function createRoom() {
+      roomCode = Math.random().toString(36).substring(2, 7);
+      alert(`Room code: ${roomCode}`);
+      socket.emit('createRoom', roomCode);
+      playerSymbol = 'X';
+      isMyTurn = true;
+      showGameBoard();
+      showWaitingMessage("Waiting for another player to join...");
+    }
+  
+    function joinRoom() {
+      roomCode = document.getElementById('roomCodeInput').value;
+      if (roomCode) {
+        socket.emit('joinRoom', roomCode);
+        playerSymbol = 'O';
+        isMyTurn = false;
+        showGameBoard();
+        showWaitingMessage();
+      } else {
+        alert('Please enter a room code');
+      }
+    }
+  
+    function showGameBoard() {
+      document.getElementById('controls').style.display = 'none';
+      document.getElementById('gameBoard').style.display = 'grid';
+      document.getElementById('waitingMessage').style.display = 'none';
+      createBoard();
+    }
+  
+    function createBoard() {
+      const gameBoard = document.getElementById('gameBoard');
+      gameBoard.innerHTML = '';
+      board.forEach((cell, index) => {
+        const cellElement = document.createElement('div');
+        cellElement.className = 'cell';
+        cellElement.dataset.index = index;
+        cellElement.innerText = cell;
+        cellElement.addEventListener('click', handleMove);
+        gameBoard.appendChild(cellElement);
+      });
+      showWaitingMessage();
+    }
+  
+    function handleMove(event) {
+      const index = event.target.dataset.index;
+      if (board[index] === '' && isMyTurn && !gameResult) {
+        board[index] = playerSymbol;
+        socket.emit('move', { index, player: playerSymbol, roomCode });
+        isMyTurn = false;
+        currentPlayer = playerSymbol === 'X' ? 'O' : 'X';
+        createBoard();
+        checkWin();
+      }
+    }
+  
+    function updateBoard(data) {
+      board[data.index] = data.player;
+      isMyTurn = data.player !== playerSymbol;
+      currentPlayer = data.player === 'X' ? 'O' : 'X';
+      createBoard();
+      checkWin();
+    }
+
+    function showTawkToChat() {
+      Tawk_API.showWidget();
+    }
+  
+    function checkWin() {
+      const winPatterns = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+      ];
+  
+      for (const pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          highlightWinningCells(a, b, c);
+          setTimeout(() => {
+            alert(`${board[a]} wins!`);
+            updateScores(board[a]);
+            resetBoard();
+          }, 500);
+          gameResult = true;
+          return;
+        }
+      }
+  
+      if (board.every(cell => cell) && !gameResult) {
+        setTimeout(() => {
+          alert('Draw!');
+          resetBoard();
+        }, 500);
+        gameResult = true;
+      }
+    }
+  
+    function highlightWinningCells(a, b, c) {
+      const cells = document.querySelectorAll('.cell');
+      cells[a].classList.add('winner');
+      cells[b].classList.add('winner');
+      cells[c].classList.add('winner');
+    }
+  
+    function resetBoard() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      gameResult = false;
+      createBoard();
+    }
+  
+    function updateScores(winner) {
+      scores[winner]++;
+      document.getElementById('scoreX').innerText = scores.X;
+      document.getElementById('scoreO').innerText = scores.O;
+    }
+  
+    function showWaitingMessage(message) {
+      if (message) {
+        document.getElementById('waitingMessage').innerText = message;
+        document.getElementById('waitingMessage').style.display = 'block';
+      } else {
+        const waitingMessage = isMyTurn ? '' : `Waiting for ${currentPlayer} to make their move...`;
+        document.getElementById('waitingMessage').innerText = waitingMessage;
+        document.getElementById('waitingMessage').style.display = isMyTurn ? 'none' : 'block';
+      }
+    }
+  
+    socket.on('move', (data) => {
+      updateBoard(data);
+      showWaitingMessage();
+    });
+  
+    socket.on('roomJoined', () => {
+      showGameBoard();
+      showWaitingMessage();
+    });
+  
+    socket.on('playerJoined', () => {
+      if (playerSymbol === 'X') {
+        isMyTurn = true;
+        showWaitingMessage();
+      }
+    });
+
+    
+  </script>
+  
+  
+  
+  
+</body>
+</html>
+
